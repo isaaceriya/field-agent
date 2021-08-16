@@ -72,24 +72,28 @@ public class AliasService {
 
         if (Validations.isNullOrBlank(alias.getName())) {
             result.addMessage("name is required", ResultType.INVALID);
+            return result;
         }
 
-        if (isDuplicate(alias.getName(), alias.getPersona())) {
-            result.addMessage("DUPLICATE", ResultType.INVALID);
+        result = isDuplicate(alias.getName(), alias.getPersona());
+        if (!(result.isSuccess())){
             return result;
         }
 
         return result;
     }
 
-    public boolean isDuplicate(String name, String persona) {
+    public Result<Alias> isDuplicate(String name, String persona) {
         Result<Alias> result = new Result<>();
         for (Alias a : aliasRepository.findAll()) {
-            if (a.getName().equals(name) && persona.isEmpty()) {
+            if (a.getName().equals(name) && Validations.isNullOrBlank(persona)) {
                 result.addMessage("Duplicate Name Persona required", ResultType.INVALID);
-                return true;
+                return result;
+            } else if(a.getName().equals(name) && persona.equals(a.getPersona())){
+                result.addMessage("Duplicate Persona & Name", ResultType.INVALID);
+                return result;
             }
         }
-        return false;
+        return result;
     }
 }
